@@ -1,0 +1,56 @@
+# Xcode
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/*.xcworkspace
+!*.xcworkspace/contents.xcworkspacedata
+*.xcuserdata
+*.xcuserstate
+*.xcscmblueprint
+*.xcscheme
+!*.xcscheme/*.xcscheme
+!*.xcscheme/*.xcscheme.plist
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+*.egg-info/
+dist/
+build/
+
+# Audio recordings (local only)
+recordings/
+
+# Logs
+*.log
+
+# Environment variables
+.env
+.env.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Dependencies
+node_modules/
+Pods/
+
+# Build
+build/
+DerivedData/
+
