@@ -9,11 +9,11 @@ import Foundation
 
 struct AppConfig {
     // MARK: - Legal & Support URLs
-    // Update these URLs with your actual hosted pages
+    // GitHub Pages URLs for legal documents
     
-    static let privacyPolicyURL = "https://yourwebsite.com/privacy-policy"
-    static let termsOfServiceURL = "https://yourwebsite.com/terms"
-    static let supportURL = "https://yourwebsite.com/support"
+    static let privacyPolicyURL = "https://shprats.github.io/dictation5x5/privacy-policy.html"
+    static let termsOfServiceURL = "https://shprats.github.io/dictation5x5/terms.html"
+    static let supportURL = "https://shprats.github.io/dictation5x5/support.html"
     
     // MARK: - URL Helpers
     
