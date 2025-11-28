@@ -31,7 +31,20 @@ final class AuthManager: NSObject, ObservableObject {
     
     override init() {
         super.init()
-        setupAuthListener()
+        // Ensure Firebase is configured before setting up listener
+        if FirebaseApp.app() == nil {
+            // Try to configure Firebase, but handle errors gracefully
+            do {
+                FirebaseApp.configure()
+            } catch {
+                // If configuration fails, we'll handle it when auth is actually used
+                print("[AuthManager] Warning: Firebase configuration may have failed")
+            }
+        }
+        // Delay listener setup slightly to ensure Firebase is ready
+        DispatchQueue.main.async { [weak self] in
+            self?.setupAuthListener()
+        }
     }
     
     deinit {
@@ -43,6 +56,13 @@ final class AuthManager: NSObject, ObservableObject {
     // MARK: - Auth State Listener
     
     private func setupAuthListener() {
+        // Check if Firebase is configured
+        guard FirebaseApp.app() != nil else {
+            print("[AuthManager] Error: Firebase not configured. Please check GoogleService-Info.plist")
+            state = .error("Firebase not configured. Please check GoogleService-Info.plist")
+            return
+        }
+        
         authStateHandle = Auth.auth().addStateDidChangeListener { [weak self] _, user in
             DispatchQueue.main.async {
                 if let user = user {
