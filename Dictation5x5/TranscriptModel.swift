@@ -110,15 +110,45 @@ final class TranscriptModel: ObservableObject {
 
     var ghostTailForRender: String {
         guard !interimFull.isEmpty else { return "" }
-        if !finalTranscript.isEmpty, interimFull.hasPrefix(finalTranscript) {
+        if finalTranscript.isEmpty {
+            // No final transcript yet - show all interim
+            return interimFull
+        } else if interimFull.hasPrefix(finalTranscript) {
+            // Interim continues from final - show only the new tail
             let tail = String(interimFull.dropFirst(finalTranscript.count))
             return tail.trimmingCharacters(in: .whitespacesAndNewlines)
-        } else if finalTranscript.isEmpty {
-            return interimFull
-        } else if interimFull.count > finalTranscript.count {
-            return interimFull
+        } else {
+            // Interim doesn't start with final (can happen after pause/correction)
+            // Show the portion that's different - this handles cases where interim is a correction
+            // or continuation after a pause where the server sends a different prefix
+            if interimFull.count > finalTranscript.count {
+                // Interim is longer - might be continuation with different prefix
+                // Find common prefix and show the rest
+                let commonPrefix = findCommonPrefix(finalTranscript, interimFull)
+                if commonPrefix.count > 0 {
+                    let tail = String(interimFull.dropFirst(commonPrefix.count))
+                    return tail.trimmingCharacters(in: .whitespacesAndNewlines)
+                }
+                // No common prefix - show full interim as it's likely a correction/continuation
+                return interimFull
+            } else {
+                // Interim is shorter or same length - likely a correction, show it
+                return interimFull
+            }
         }
-        return ""
+    }
+    
+    private func findCommonPrefix(_ str1: String, _ str2: String) -> String {
+        let minLength = min(str1.count, str2.count)
+        var commonLength = 0
+        for i in 0..<minLength {
+            if str1[str1.index(str1.startIndex, offsetBy: i)] == str2[str2.index(str2.startIndex, offsetBy: i)] {
+                commonLength += 1
+            } else {
+                break
+            }
+        }
+        return String(str1.prefix(commonLength))
     }
 
     func needsSpaceBetweenCommittedAndGhost() -> Bool {

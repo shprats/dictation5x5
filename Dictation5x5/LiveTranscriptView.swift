@@ -15,10 +15,11 @@ struct LiveTranscriptView: View {
             ScrollViewReader { proxy in
                 ScrollView {
                     VStack(alignment: .leading) {
-                        // Committed prefix
+                        // Committed prefix - observe finalTranscript directly to ensure updates
                         Text(transcript.committedPrefixForRender)
                             .foregroundColor(.primary)
                             .frame(maxWidth: .infinity, alignment: .leading)
+                            .id("committed-\(transcript.finalTranscript.count)-\(transcript.changeTick)")
 
                         // Delta highlight (temporary flash)
                         if !transcript.committedDeltaForRender.isEmpty {
@@ -32,7 +33,7 @@ struct LiveTranscriptView: View {
                                 .animation(.easeInOut(duration: transcript.highlightActive ? 0.2 : 0.2), value: transcript.highlightActive)
                         }
 
-                        // Ghost tail
+                        // Ghost tail - observe interimFull directly to ensure updates after pauses
                         if !transcript.ghostTailForRender.isEmpty {
                             HStack(spacing: 0) {
                                 Text(transcript.needsSpaceBetweenCommittedAndGhost() ? " " : "")
@@ -42,6 +43,7 @@ struct LiveTranscriptView: View {
                                     .italic()
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
+                            .id("ghost-\(transcript.interimFull.count)-\(transcript.changeTick)")
                         }
 
                         // Empty prompt
@@ -55,6 +57,17 @@ struct LiveTranscriptView: View {
                     }
                     .padding(12)
                     .onChange(of: transcript.changeTick) { _ in
+                        withAnimation(.easeOut(duration: 0.2)) {
+                            proxy.scrollTo("bottom", anchor: .bottom)
+                        }
+                    }
+                    // Also observe interimFull and finalTranscript directly to force updates
+                    .onChange(of: transcript.interimFull) { _ in
+                        withAnimation(.easeOut(duration: 0.2)) {
+                            proxy.scrollTo("bottom", anchor: .bottom)
+                        }
+                    }
+                    .onChange(of: transcript.finalTranscript) { _ in
                         withAnimation(.easeOut(duration: 0.2)) {
                             proxy.scrollTo("bottom", anchor: .bottom)
                         }
