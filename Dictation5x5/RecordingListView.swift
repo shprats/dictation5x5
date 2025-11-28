@@ -15,40 +15,73 @@ struct RecordingListView: View {
 
     var body: some View {
         NavigationView {
-            List(sessions) { item in
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(item.id)
-                        .font(.caption)
-                        .foregroundColor(.gray)
-                    Text("Updated: \(formattedDate(item.updatedAt))")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                    Text(item.transcriptPreview)
-                        .lineLimit(5)
-                        .font(.body)
-                        .foregroundColor(.primary)
-                    HStack {
-                        if let dur = item.durationSeconds {
-                            Text(String(format: "Dur: %.1fs", dur))
+            Group {
+                if store.currentUserID == nil {
+                    VStack(spacing: 16) {
+                        Image(systemName: "person.crop.circle.badge.questionmark")
+                            .font(.system(size: 48))
+                            .foregroundColor(.secondary)
+                        Text("Not Signed In")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                        Text("Please sign in to view your recordings")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else if sessions.isEmpty {
+                    VStack(spacing: 16) {
+                        Image(systemName: "mic.slash")
+                            .font(.system(size: 48))
+                            .foregroundColor(.secondary)
+                        Text("No Recordings")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                        Text("Your recordings will appear here")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    List(sessions) { item in
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text(item.id)
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                            Text("Updated: \(formattedDate(item.updatedAt))")
                                 .font(.caption2)
+                                .foregroundColor(.secondary)
+                            Text(item.transcriptPreview)
+                                .lineLimit(5)
+                                .font(.body)
+                                .foregroundColor(.primary)
+                            HStack {
+                                if let dur = item.durationSeconds {
+                                    Text(String(format: "Dur: %.1fs", dur))
+                                        .font(.caption2)
+                                }
+                                Text("Bytes: \(item.bytesSent)")
+                                    .font(.caption2)
+                                Spacer()
+                                Button {
+                                    playAudio(for: item.id)
+                                } label: {
+                                    Label("Play", systemImage: playingSessionID == item.id ? "stop.fill" : "play.fill")
+                                }
+                                .buttonStyle(.bordered)
+                                .tint(playingSessionID == item.id ? .brandOrange : .brandBlue)
+                            }
                         }
-                        Text("Bytes: \(item.bytesSent)")
-                            .font(.caption2)
-                        Spacer()
-                        Button {
-                            playAudio(for: item.id)
-                        } label: {
-                            Label("Play", systemImage: playingSessionID == item.id ? "stop.fill" : "play.fill")
-                        }
-                        .buttonStyle(.bordered)
-                        .tint(playingSessionID == item.id ? .brandOrange : .brandBlue)
+                        .padding(.vertical, 6)
                     }
                 }
-                .padding(.vertical, 6)
             }
             .navigationTitle("History")
             .toolbar {
-                Button("Refresh") { load() }
+                if store.currentUserID != nil {
+                    Button("Refresh") { load() }
+                }
             }
             .onAppear { load() }
             .alert(item: $playbackError) { err in

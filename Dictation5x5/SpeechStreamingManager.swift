@@ -65,6 +65,13 @@ final class SpeechStreamingManager: NSObject, ObservableObject {
 
     func start() {
         guard case .idle = state else { return }
+        // Ensure user ID is set before starting recording
+        guard store.currentUserID != nil else {
+            DispatchQueue.main.async {
+                self.showError("Please sign in to record")
+            }
+            return
+        }
         DispatchQueue.main.async {
             self.sessionID = UUID().uuidString
             self.transcript.reset()

@@ -31,6 +31,19 @@ struct ContentView: View {
             // Initialize auth listener after view appears (Firebase should be ready by then)
             authManager.initializeAuthListener()
         }
+        .onChange(of: authManager.state) { newState in
+            // Update RecordingStore with current user ID when user signs in/out
+            switch newState {
+            case .signedIn(let userID, _, _):
+                store.setUserID(userID)
+                print("[ContentView] Set RecordingStore userID: \(userID)")
+            case .signedOut:
+                store.clearUserID()
+                print("[ContentView] Cleared RecordingStore userID")
+            default:
+                break
+            }
+        }
     }
     
     private var mainContentView: some View {
