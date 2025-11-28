@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ContentView: View {
+    @StateObject private var authManager = AuthManager()
     @StateObject private var store = RecordingStore()
     @StateObject private var serverConfig = ServerConfig()
     @StateObject private var streaming: SpeechStreamingManager
@@ -19,6 +20,16 @@ struct ContentView: View {
     }
 
     var body: some View {
+        Group {
+            if authManager.isSignedIn {
+                mainContentView
+            } else {
+                LoginView(authManager: authManager)
+            }
+        }
+    }
+    
+    private var mainContentView: some View {
         ZStack {
             NavigationView {
                 VStack(spacing: 16) {
@@ -138,7 +149,7 @@ struct ContentView: View {
             RecordingListView(store: store)
         }
         .sheet(isPresented: $showSettings) {
-            SettingsView(serverConfig: serverConfig, streaming: streaming)
+            SettingsView(authManager: authManager, serverConfig: serverConfig, streaming: streaming)
         }
         .onAppear {
             updateStreamingManagerURL()

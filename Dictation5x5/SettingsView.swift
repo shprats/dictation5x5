@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct SettingsView: View {
+    @ObservedObject var authManager: AuthManager
     @ObservedObject var serverConfig: ServerConfig
     @ObservedObject var streaming: SpeechStreamingManager
     @Environment(\.dismiss) var dismiss
@@ -15,6 +16,7 @@ struct SettingsView: View {
     @State private var serverURLString: String = ""
     @State private var showError = false
     @State private var errorMessage = ""
+    @State private var showUserProfile = false
     
     // Preset URLs
     private let presets = [
@@ -26,6 +28,29 @@ struct SettingsView: View {
     var body: some View {
         NavigationView {
             Form {
+                // User Account Section
+                Section(header: Text("Account")) {
+                    if let user = authManager.currentUser {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(user.displayName ?? "User")
+                                    .font(.headline)
+                                Text(user.email ?? "No email")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            Spacer()
+                            Button(action: {
+                                showUserProfile = true
+                            }) {
+                                Image(systemName: "person.circle")
+                                    .font(.title2)
+                                    .foregroundColor(.blue)
+                            }
+                        }
+                    }
+                }
+                
                 Section(header: Text("Server Configuration")) {
                     Text("WebSocket Server URL")
                         .font(.caption)
@@ -101,6 +126,9 @@ struct SettingsView: View {
                 Button("OK", role: .cancel) { }
             } message: {
                 Text(errorMessage)
+            }
+            .sheet(isPresented: $showUserProfile) {
+                UserProfileView(authManager: authManager)
             }
             .onAppear {
                 serverURLString = serverConfig.serverURL.absoluteString
