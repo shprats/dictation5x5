@@ -50,10 +50,11 @@ final class TranscriptModel: ObservableObject {
         
         // CRITICAL: Before accepting a FINAL, commit the current interim if it's longer than the current final.
         // This preserves content that was in the interim before the FINAL arrived.
+        // This is especially important for large paragraphs that are still being transcribed.
         if !interimFull.isEmpty && interimFull.count > finalTranscript.count {
             // Interim is longer than current final - commit it first
             finalTranscript = interimFull
-            debugPrint("[TranscriptModel] Committing longer interim to final before accepting new FINAL (interim: \(interimFull.count), old final: \(finalTranscript.count))")
+            debugPrint("[TranscriptModel] Committing longer interim to final before accepting new FINAL (interim: \(interimFull.count), old final: \(prevFinalTranscript.count))")
         }
         
         // FINAL messages from the server are cumulative (full transcript so far).
@@ -61,43 +62,62 @@ final class TranscriptModel: ObservableObject {
         let finalLower = finalTranscript.lowercased()
         let nextFullLower = nextFull.lowercased()
         
-        // Check if FINAL is cumulative (starts with current final or contains it)
-        let finalPrefix = finalLower.prefix(min(50, finalLower.count))
-        
-        if nextFullLower.hasPrefix(finalPrefix) || nextFullLower.contains(finalPrefix) || finalTranscript.isEmpty {
-            // FINAL is cumulative (starts with or contains current final) - use FINAL as authoritative
+        // PRIORITY 1: If FINAL is longer than current final, trust it as cumulative
+        // This handles cases where a new paragraph comes in and FINAL doesn't start with current final
+        // but is still the cumulative transcript from the server
+        if nextFull.count > finalTranscript.count {
+            // FINAL is longer - it's the authoritative cumulative transcript
+            // Even if it doesn't start with current final (new paragraph), trust it
             finalTranscript = nextFull
-            debugPrint("[TranscriptModel] Using FINAL as cumulative transcript (current: \(finalTranscript.count), new: \(nextFull.count))")
+            debugPrint("[TranscriptModel] Using longer FINAL as cumulative transcript (current: \(finalTranscript.count), new: \(nextFull.count)) - trusting server")
             interimFull = ""
-        } else if finalLower.contains(nextFullLower) {
-            // Current final already contains the FINAL - keep current final (FINAL is a subset)
-            debugPrint("[TranscriptModel] Keeping current final as it already contains FINAL (current: \(finalTranscript.count), FINAL: \(nextFull.count))")
+        }
+        // PRIORITY 2: Check if FINAL is cumulative (starts with current final or contains it)
+        else if finalTranscript.isEmpty {
+            // No final yet - use FINAL
+            finalTranscript = nextFull
+            debugPrint("[TranscriptModel] Using FINAL as first transcript (len=\(nextFull.count))")
             interimFull = ""
-        } else if nextFull.count < finalTranscript.count {
-            // FINAL is shorter than current final - might be incomplete
-            // Only keep current final if it's significantly longer (more than 50% longer)
-            // Otherwise, trust the FINAL (it might be a correction)
-            if Double(finalTranscript.count) > Double(nextFull.count) * 1.5 && nextFull.count > 0 {
-                // Current final is much longer - keep it (FINAL might be incomplete)
-                debugPrint("[TranscriptModel] Keeping much longer final (current: \(finalTranscript.count), new: \(nextFull.count))")
-                // Preserve interim if it's longer than FINAL
-                if !interimFull.isEmpty && interimFull.count > nextFull.count {
-                    debugPrint("[TranscriptModel] Preserving interim (len=\(interimFull.count)) as it's longer than FINAL")
+        }
+        else {
+            let finalPrefix = finalLower.prefix(min(50, finalLower.count))
+            
+            if nextFullLower.hasPrefix(finalPrefix) || nextFullLower.contains(finalPrefix) {
+                // FINAL is cumulative (starts with or contains current final) - use FINAL as authoritative
+                finalTranscript = nextFull
+                debugPrint("[TranscriptModel] Using FINAL as cumulative transcript (current: \(finalTranscript.count), new: \(nextFull.count))")
+                interimFull = ""
+            } else if finalLower.contains(nextFullLower) {
+                // Current final already contains the FINAL - keep current final (FINAL is a subset)
+                debugPrint("[TranscriptModel] Keeping current final as it already contains FINAL (current: \(finalTranscript.count), FINAL: \(nextFull.count))")
+                interimFull = ""
+            } else if nextFull.count < finalTranscript.count {
+                // FINAL is shorter than current final - might be incomplete
+                // Only keep current final if it's significantly longer (more than 50% longer)
+                // Otherwise, trust the FINAL (it might be a correction)
+                if Double(finalTranscript.count) > Double(nextFull.count) * 1.5 && nextFull.count > 0 {
+                    // Current final is much longer - keep it (FINAL might be incomplete)
+                    debugPrint("[TranscriptModel] Keeping much longer final (current: \(finalTranscript.count), new: \(nextFull.count))")
+                    // Preserve interim if it's longer than FINAL
+                    if !interimFull.isEmpty && interimFull.count > nextFull.count {
+                        debugPrint("[TranscriptModel] Preserving interim (len=\(interimFull.count)) as it's longer than FINAL")
+                    } else {
+                        interimFull = ""
+                    }
                 } else {
+                    // Similar lengths or FINAL is reasonable - trust the FINAL (it's the server's authoritative version)
+                    finalTranscript = nextFull
+                    debugPrint("[TranscriptModel] Using FINAL despite being shorter (current: \(finalTranscript.count), new: \(nextFull.count)) - trusting server")
                     interimFull = ""
                 }
             } else {
-                // Similar lengths or FINAL is reasonable - trust the FINAL (it's the server's authoritative version)
+                // FINAL is equal length - trust it as cumulative (server is authoritative)
                 finalTranscript = nextFull
-                debugPrint("[TranscriptModel] Using FINAL despite being shorter (current: \(finalTranscript.count), new: \(nextFull.count)) - trusting server")
+                debugPrint("[TranscriptModel] Using equal-length FINAL as cumulative transcript (current: \(finalTranscript.count), new: \(nextFull.count))")
                 interimFull = ""
             }
-        } else {
-            // FINAL is longer or equal - it's the authoritative cumulative transcript
-            finalTranscript = nextFull
-            debugPrint("[TranscriptModel] Using longer/equal FINAL as cumulative transcript (current: \(finalTranscript.count), new: \(nextFull.count))")
-            interimFull = ""
         }
+        
         finalRevisions += 1
 
         let delta: String
