@@ -14,16 +14,19 @@ struct Dictation5x5App: App {
     init() {
         // Initialize Firebase first, before any other code runs
         // Check if GoogleService-Info.plist exists
-        guard let path = Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist") else {
-            fatalError("GoogleService-Info.plist not found. Please add it to your project.")
+        if Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist") == nil {
+            print("⚠️ [Dictation5x5App] WARNING: GoogleService-Info.plist not found. Firebase may not work properly.")
+            print("⚠️ Please add GoogleService-Info.plist to your project and ensure it's added to the target.")
         }
         
         // Configure Firebase
         FirebaseApp.configure()
         
         // Verify configuration
-        guard FirebaseApp.app() != nil else {
-            fatalError("Firebase configuration failed. Please check GoogleService-Info.plist")
+        if FirebaseApp.app() == nil {
+            print("⚠️ [Dictation5x5App] WARNING: Firebase configuration failed. Please check GoogleService-Info.plist")
+        } else {
+            print("✅ [Dictation5x5App] Firebase configured successfully")
         }
     }
     

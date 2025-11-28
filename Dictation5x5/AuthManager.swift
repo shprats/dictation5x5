@@ -290,7 +290,8 @@ extension AuthManager: ASAuthorizationControllerDelegate {
                 var random: UInt8 = 0
                 let errorCode = SecRandomCopyBytes(kSecRandomDefault, 1, &random)
                 if errorCode != errSecSuccess {
-                    fatalError("Unable to generate nonce. SecRandomCopyBytes failed with OSStatus \(errorCode)")
+                    // Fallback to arc4random if SecRandomCopyBytes fails
+                    random = UInt8(arc4random_uniform(256))
                 }
                 return random
             }
@@ -325,7 +326,10 @@ extension AuthManager: ASAuthorizationControllerPresentationContextProviding {
     func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
         guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
               let window = windowScene.windows.first(where: { $0.isKeyWindow }) ?? windowScene.windows.first else {
-            fatalError("No window available for Sign in with Apple")
+            // Fallback: create a new window if none available
+            let fallbackWindow = UIWindow(frame: UIScreen.main.bounds)
+            fallbackWindow.makeKeyAndVisible()
+            return fallbackWindow
         }
         return window
     }
