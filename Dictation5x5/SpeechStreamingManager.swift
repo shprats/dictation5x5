@@ -147,8 +147,29 @@ final class SpeechStreamingManager: NSObject, ObservableObject {
     }
 
     private func receiveLoop() {
+        // Don't continue receiving if we're closing or closed
+        guard webSocketTask != nil else {
+            debugPrint("[SSM] Stopping receive loop (socket is nil)")
+            return
+        }
+        
+        // Only continue receiving if we're in an active state
+        switch state {
+        case .streaming, .stopping, .configuring, .connecting:
+            break // Continue
+        default:
+            debugPrint("[SSM] Stopping receive loop (state:", state, ")")
+            return
+        }
+        
         webSocketTask?.receive { [weak self] result in
             guard let self else { return }
+            // Check again if we should continue
+            guard self.webSocketTask != nil else {
+                debugPrint("[SSM] Receive callback: socket already closed")
+                return
+            }
+            
             switch result {
             case .failure(let err):
                 DispatchQueue.main.async {
@@ -191,11 +212,9 @@ final class SpeechStreamingManager: NSObject, ObservableObject {
             debugPrint("[SSM] Received INTERIM (len=\(hyp.count)):", hyp.prefix(100))
             if self.metrics.firstInterimAt == nil { self.metrics.markFirstInterim() }
 
-            // Improved regression guard: allow updates if:
-            // 1. New text is longer (growing transcript)
-            // 2. New text is within 20% of previous length (allows corrections)
-            // 3. Previous is empty (first interim)
-            // 4. New text is significantly different (allows complete rewrites)
+            // Improved regression guard: detect new sentences vs actual regressions
+            // After a pause, the server might send a completely new interim (new sentence/paragraph)
+            // This is NOT a regression - it's new content. We need to detect this.
             let allow: Bool
             if lastInterim.isEmpty {
                 allow = true
@@ -203,9 +222,43 @@ final class SpeechStreamingManager: NSObject, ObservableObject {
                 // Growing transcript - always allow
                 allow = true
             } else {
-                // Shrinking - allow if within reasonable bounds (20% tolerance)
+                // Shrinking - check if it's a new sentence or a regression
                 let shrinkRatio = Double(hyp.count) / Double(lastInterim.count)
-                allow = shrinkRatio >= 0.8 || hyp.count > 50 // Allow if >80% of previous or still substantial
+                let finalLen = self.transcript.finalTranscript.count
+                
+                // Check if new text is completely different (new sentence/paragraph)
+                // If the new text doesn't start with any part of the previous interim,
+                // and doesn't overlap with the final transcript, it's likely a new sentence
+                let isNewSentence = !hyp.isEmpty && 
+                    !lastInterim.lowercased().hasPrefix(hyp.lowercased().prefix(min(10, hyp.count))) &&
+                    !hyp.lowercased().hasPrefix(lastInterim.lowercased().prefix(min(10, lastInterim.count))) &&
+                    (finalLen == 0 || !hyp.lowercased().hasPrefix(self.transcript.finalTranscript.lowercased().prefix(min(10, self.transcript.finalTranscript.count))))
+                
+                // Also check if the new text appears to be a continuation word (like "are", "the", "and")
+                // after a very long previous interim - this is likely a new sentence after a pause
+                let isShortContinuation = hyp.count < 50 && 
+                    lastInterim.count > 200 && 
+                    !lastInterim.lowercased().hasSuffix(hyp.lowercased())
+                
+                // Check if the new text is a continuation after a pause (starts with a word that's not in the previous interim)
+                // This handles cases like: previous interim was "stable things on this planet" and new is "North"
+                let isContinuationAfterPause = hyp.count > 0 && 
+                    hyp.count < lastInterim.count / 2 &&
+                    !lastInterim.lowercased().contains(hyp.lowercased()) &&
+                    !hyp.lowercased().hasPrefix(lastInterim.lowercased().suffix(min(20, lastInterim.count)).lowercased())
+                
+                // Allow if:
+                // 1. >60% of previous length (allows corrections and small regressions)
+                // 2. Still substantial (>15 chars) - might be a new sentence starting
+                // 3. New text is longer than final (continuation after pause)
+                // 4. It's a completely new sentence (doesn't overlap with previous)
+                // 5. It's a short continuation after a long interim (new sentence after pause)
+                // 6. It's a continuation after a pause (new word/sentence after music or silence)
+                allow = shrinkRatio >= 0.6 || hyp.count > 15 || hyp.count > finalLen || isNewSentence || isShortContinuation || isContinuationAfterPause
+                
+                if isNewSentence || isContinuationAfterPause {
+                    debugPrint("[SSM] Detected new sentence/continuation after pause (not regression):", hyp.prefix(50))
+                }
             }
             
             if allow {
@@ -254,14 +307,35 @@ final class SpeechStreamingManager: NSObject, ObservableObject {
 
     private func closeWebSocket(code: URLSessionWebSocketTask.CloseCode, reason: String) {
         debugPrint("[SSM] WS close:", reason, "code:", code.rawValue)
+        
+        // Stop audio capture first to prevent new chunks
+        stopAudioCapture()
+        
+        // Clear any pending audio buffer
+        pcmBuffer.removeAll()
+        
+        // Cancel and close the socket
         webSocketTask?.cancel(with: code, reason: reason.data(using: .utf8))
         webSocketSession?.invalidateAndCancel()
+        
+        // Set to nil immediately to prevent any new operations
+        let wasTask = webSocketTask != nil
         webSocketTask = nil
+        webSocketSession = nil
+        
         DispatchQueue.main.async {
             self.isRecording = false
             self.isStopping = false
             self.showLiveIndicator = false
-            if case .stopping = self.state { self.state = .finished }
+            if case .stopping = self.state { 
+                self.state = .finished 
+            } else if case .streaming = self.state {
+                self.state = .finished
+            }
+        }
+        
+        if wasTask {
+            debugPrint("[SSM] WebSocket closed successfully")
         }
     }
 
@@ -408,6 +482,12 @@ final class SpeechStreamingManager: NSObject, ObservableObject {
     }
 
     private func sendAudioChunk(_ pcmData: Data, allowWhileStopping: Bool) {
+        // Check if socket is still valid
+        guard let task = webSocketTask else {
+            debugPrint("[SSM] Skipping send (socket is nil) bytes:", pcmData.count)
+            return
+        }
+        
         let canSend: Bool
         switch state {
         case .streaming: canSend = true
@@ -421,11 +501,22 @@ final class SpeechStreamingManager: NSObject, ObservableObject {
 
         let payload = pcmData
         metrics.addBytesSent(payload.count)
-        webSocketTask?.send(.data(payload)) { [weak self] error in
+        task.send(.data(payload)) { [weak self] error in
+            // Ignore errors if we're already closing/closed
+            guard let self = self, self.webSocketTask != nil else {
+                return
+            }
             if let e = error {
+                // Only report errors if we're not in the process of closing
+                if case .stopping = self.state, 
+                   (e.localizedDescription.contains("Socket is not connected") || 
+                    e.localizedDescription.contains("not connected")) {
+                    debugPrint("[SSM] Send error during close (ignoring):", e.localizedDescription)
+                    return
+                }
                 DispatchQueue.main.async {
                     debugPrint("[SSM] sendAudioChunk error:", e.localizedDescription)
-                    self?.handleReceiveError("Send error: \(e.localizedDescription)")
+                    self.handleReceiveError("Send error: \(e.localizedDescription)")
                 }
             }
         }

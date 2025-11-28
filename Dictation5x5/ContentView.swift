@@ -125,41 +125,42 @@ struct ContentView: View {
                     Spacer()
                 }
                 .padding()
-                .navigationBarHidden(true)
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button(action: {
+                            showSettings = true
+                        }) {
+                            Image(systemName: "gear")
+                                .foregroundColor(.brandOrange)
+                        }
+                        .accessibilityLabel("Settings")
+                    }
+                }
             }
 
-            // FAB buttons at bottom right
+            // History button at bottom right
             VStack {
                 Spacer()
-                HStack(spacing: 16) {
+                HStack {
                     Spacer()
-                    // Settings button
-                    Button(action: {
-                        showSettings = true
-                    }) {
-                        Image(systemName: "gear")
-                            .font(.system(size: 24, weight: .bold))
-                            .foregroundColor(.white)
-                            .padding()
-                            .background(Color.brandOrange)
-                            .clipShape(Circle())
-                            .shadow(color: .brandOrange.opacity(0.4), radius: 8, x: 0, y: 4)
-                    }
-                    .accessibilityLabel("Settings")
-                    
-                    // History button
                     Button(action: {
                         showHistory = true
                     }) {
-                        Image(systemName: "clock.arrow.circlepath")
-                            .font(.system(size: 28, weight: .bold))
-                            .foregroundColor(.white)
-                            .padding()
-                            .background(Color.brandBlue)
-                            .clipShape(Circle())
-                            .shadow(color: .brandBlue.opacity(0.4), radius: 8, x: 0, y: 4)
+                        HStack(spacing: 8) {
+                            Image(systemName: "list.bullet.rectangle")
+                                .font(.system(size: 20, weight: .semibold))
+                            Text("History")
+                                .font(.headline)
+                        }
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 12)
+                        .background(Color.brandBlue)
+                        .cornerRadius(25)
+                        .shadow(color: .brandBlue.opacity(0.4), radius: 8, x: 0, y: 4)
                     }
-                    .accessibilityLabel("History")
+                    .accessibilityLabel("View Recording History")
                     .padding(.trailing, 22)
                     .padding(.bottom, 28)
                 }

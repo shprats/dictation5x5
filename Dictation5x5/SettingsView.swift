@@ -29,6 +29,28 @@ struct SettingsView: View {
     var body: some View {
         NavigationView {
             Form {
+                // Note Organization Section - FIRST
+                Section(header: Text("Note Organization")) {
+                    NavigationLink(destination: SpecialtyConfigView(profileConfig: UserProfileConfig.shared)) {
+                        HStack {
+                            Image(systemName: UserProfileConfig.shared.selectedSpecialty.icon)
+                                .foregroundColor(.brandBlue)
+                                .frame(width: 30)
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Medical Specialty")
+                                    .font(.headline)
+                                Text(UserProfileConfig.shared.selectedSpecialty.rawValue)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+                
                 // User Account Section
                 Section(header: Text("Account")) {
                     if let user = authManager.currentUser {

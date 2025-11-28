@@ -34,6 +34,7 @@ struct LiveTranscriptView: View {
                         }
 
                         // Ghost tail - observe interimFull directly to ensure updates after pauses
+                        // The .id() modifier uses both interimFull and changeTick to force re-renders
                         if !transcript.ghostTailForRender.isEmpty {
                             HStack(spacing: 0) {
                                 Text(transcript.needsSpaceBetweenCommittedAndGhost() ? " " : "")
@@ -43,7 +44,8 @@ struct LiveTranscriptView: View {
                                     .italic()
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .id("ghost-\(transcript.interimFull.count)-\(transcript.changeTick)")
+                            // Use a more unique ID that includes both interim and final to force updates
+                            .id("ghost-\(transcript.interimFull.hashValue)-\(transcript.finalTranscript.count)-\(transcript.changeTick)")
                         }
 
                         // Empty prompt
@@ -57,17 +59,21 @@ struct LiveTranscriptView: View {
                     }
                     .padding(12)
                     .onChange(of: transcript.changeTick) { _ in
+                        // Force view update when tick changes
                         withAnimation(.easeOut(duration: 0.2)) {
                             proxy.scrollTo("bottom", anchor: .bottom)
                         }
                     }
                     // Also observe interimFull and finalTranscript directly to force updates
-                    .onChange(of: transcript.interimFull) { _ in
+                    // These onChange handlers ensure the view updates even after pauses
+                    .onChange(of: transcript.interimFull) { newValue in
+                        // Force UI refresh when interim changes - this is critical after pauses
                         withAnimation(.easeOut(duration: 0.2)) {
                             proxy.scrollTo("bottom", anchor: .bottom)
                         }
                     }
-                    .onChange(of: transcript.finalTranscript) { _ in
+                    .onChange(of: transcript.finalTranscript) { newValue in
+                        // Force UI refresh when final changes
                         withAnimation(.easeOut(duration: 0.2)) {
                             proxy.scrollTo("bottom", anchor: .bottom)
                         }
