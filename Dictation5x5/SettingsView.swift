@@ -46,7 +46,7 @@ struct SettingsView: View {
                             }) {
                                 Image(systemName: "person.circle")
                                     .font(.title2)
-                                    .foregroundColor(.blue)
+                                    .foregroundColor(.brandOrange)
                             }
                         }
                     }
@@ -79,7 +79,7 @@ struct SettingsView: View {
                                     Spacer()
                                     if serverConfig.serverURL.absoluteString == preset.1 {
                                         Image(systemName: "checkmark")
-                                            .foregroundColor(.blue)
+                                            .foregroundColor(.brandOrange)
                                     }
                                 }
                             }
@@ -98,7 +98,7 @@ struct SettingsView: View {
                     if streaming.state != .idle {
                         Text("Note: Server URL can only be changed when idle")
                             .font(.caption)
-                            .foregroundColor(.orange)
+                            .foregroundColor(.brandOrange)
                     }
                 }
                 
@@ -108,8 +108,12 @@ struct SettingsView: View {
                             Spacer()
                             Text("Save")
                                 .fontWeight(.semibold)
+                                .foregroundColor(.white)
                             Spacer()
                         }
+                        .padding(.vertical, 8)
+                        .background(streaming.state != .idle || serverURLString.isEmpty ? Color.gray : Color.brandOrange)
+                        .cornerRadius(10)
                     }
                     .disabled(streaming.state != .idle || serverURLString.isEmpty)
                 }
@@ -166,7 +170,7 @@ struct SettingsView: View {
                             Text("Sign Out")
                             Spacer()
                         }
-                        .foregroundColor(.blue)
+                        .foregroundColor(.brandBlue)
                     }
                 }
             }
@@ -224,13 +228,13 @@ struct SettingsView: View {
     private var statusColor: Color {
         switch streaming.state {
         case .idle, .finished:
-            return .green
+            return .successGreen
         case .connecting, .configuring, .stopping:
-            return .orange
+            return .brandOrange
         case .streaming:
-            return .blue
+            return .brandBlue
         case .error:
-            return .red
+            return .errorRed
         }
     }
     

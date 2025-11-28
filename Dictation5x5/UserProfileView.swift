@@ -55,7 +55,7 @@ struct UserProfileView: View {
                             Image(systemName: "arrow.right.square")
                             Text("Sign Out")
                         }
-                        .foregroundColor(.blue)
+                        .foregroundColor(.brandBlue)
                     }
                     
                     Button(action: {

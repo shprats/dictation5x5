@@ -35,7 +35,7 @@ struct ContentView: View {
                 VStack(spacing: 16) {
                     Text("Live Transcript")
                         .font(.title)
-                        .foregroundColor(Color.blue)
+                        .foregroundColor(.brandBlue)
                         .bold()
 
                     // Controls
@@ -47,6 +47,7 @@ struct ContentView: View {
                             Label("Start", systemImage: "play.circle.fill")
                         }
                         .buttonStyle(.borderedProminent)
+                        .tint(.brandOrange)
                         .disabled(streaming.state != .idle)
 
                         Button {
@@ -55,6 +56,7 @@ struct ContentView: View {
                             Label("Stop", systemImage: "stop.circle.fill")
                         }
                         .buttonStyle(.bordered)
+                        .tint(.brandBlue)
                         .disabled(!streaming.isRecording || streaming.isStopping)
 
                         Button {
@@ -63,6 +65,7 @@ struct ContentView: View {
                             Label("Reset", systemImage: "arrow.counterclockwise.circle")
                         }
                         .buttonStyle(.bordered)
+                        .tint(.brandBlue)
                         .disabled(streaming.isRecording)
                     }
 
@@ -84,7 +87,7 @@ struct ContentView: View {
                             .cornerRadius(12)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                                    .stroke(Color.brandOrange.opacity(0.3), lineWidth: 1)
                             )
 
                         HStack(spacing: 14) {
@@ -121,9 +124,9 @@ struct ContentView: View {
                             .font(.system(size: 24, weight: .bold))
                             .foregroundColor(.white)
                             .padding()
-                            .background(Color.gray)
+                            .background(Color.brandOrange)
                             .clipShape(Circle())
-                            .shadow(radius: 5)
+                            .shadow(color: .brandOrange.opacity(0.4), radius: 8, x: 0, y: 4)
                     }
                     .accessibilityLabel("Settings")
                     
@@ -135,9 +138,9 @@ struct ContentView: View {
                             .font(.system(size: 28, weight: .bold))
                             .foregroundColor(.white)
                             .padding()
-                            .background(Color.blue)
+                            .background(Color.brandBlue)
                             .clipShape(Circle())
-                            .shadow(radius: 5)
+                            .shadow(color: .brandBlue.opacity(0.4), radius: 8, x: 0, y: 4)
                     }
                     .accessibilityLabel("History")
                     .padding(.trailing, 22)

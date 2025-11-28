@@ -26,15 +26,16 @@ struct LoginView: View {
                 VStack(spacing: 8) {
                     Image(systemName: "mic.circle.fill")
                         .font(.system(size: 80))
-                        .foregroundColor(.blue)
+                        .foregroundColor(.brandOrange)
                     
                     Text("Dictation5x5")
                         .font(.largeTitle)
                         .fontWeight(.bold)
+                        .foregroundColor(.brandBlue)
                     
                     Text("Medical Dictation Made Easy")
                         .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.textSecondary)
                 }
                 .padding(.top, 40)
                 .padding(.bottom, 20)
@@ -113,7 +114,7 @@ struct LoginView: View {
                             showForgotPassword = true
                         }
                         .font(.caption)
-                        .foregroundColor(.blue)
+                        .foregroundColor(.brandBlue)
                         .frame(maxWidth: .infinity, alignment: .trailing)
                     }
                     
@@ -129,8 +130,8 @@ struct LoginView: View {
                             .frame(maxWidth: .infinity)
                             .frame(height: 50)
                             .foregroundColor(.white)
-                            .background(email.isEmpty || password.isEmpty ? Color.gray : Color.blue)
-                            .cornerRadius(8)
+                            .background(email.isEmpty || password.isEmpty ? Color.gray : Color.brandOrange)
+                            .cornerRadius(12)
                     }
                     .disabled(email.isEmpty || password.isEmpty || authManager.state == .signingIn)
                     
@@ -141,7 +142,7 @@ struct LoginView: View {
                     }) {
                         Text(isSignUp ? "Already have an account? Sign In" : "Don't have an account? Sign Up")
                             .font(.caption)
-                            .foregroundColor(.blue)
+                            .foregroundColor(.brandBlue)
                     }
                 }
                 
@@ -149,7 +150,7 @@ struct LoginView: View {
                 if case .error(let message) = authManager.state {
                     Text(message)
                         .font(.caption)
-                        .foregroundColor(.red)
+                        .foregroundColor(.errorRed)
                         .padding(.horizontal)
                         .multilineTextAlignment(.center)
                 }
@@ -219,8 +220,8 @@ struct ForgotPasswordView: View {
                         .frame(maxWidth: .infinity)
                         .frame(height: 50)
                         .foregroundColor(.white)
-                        .background(email.isEmpty ? Color.gray : Color.blue)
-                        .cornerRadius(8)
+                        .background(email.isEmpty ? Color.gray : Color.brandOrange)
+                        .cornerRadius(12)
                 }
                 .disabled(email.isEmpty)
                 .padding(.horizontal)

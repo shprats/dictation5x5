@@ -41,6 +41,7 @@ struct RecordingListView: View {
                             Label("Play", systemImage: playingSessionID == item.id ? "stop.fill" : "play.fill")
                         }
                         .buttonStyle(.bordered)
+                        .tint(playingSessionID == item.id ? .brandOrange : .brandBlue)
                     }
                 }
                 .padding(.vertical, 6)

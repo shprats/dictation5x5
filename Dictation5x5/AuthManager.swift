@@ -9,6 +9,7 @@ import Foundation
 import AuthenticationServices
 import Combine
 import CryptoKit
+import FirebaseCore
 import FirebaseAuth
 import GoogleSignIn
 
@@ -16,7 +17,7 @@ import GoogleSignIn
 /// Supports: Sign in with Apple, Google Sign-In, and Email/Password
 final class AuthManager: NSObject, ObservableObject {
     
-    enum AuthState {
+    enum AuthState: Equatable {
         case signedOut
         case signingIn
         case signedIn(userID: String, email: String?, displayName: String?)
@@ -26,6 +27,7 @@ final class AuthManager: NSObject, ObservableObject {
     @Published private(set) var state: AuthState = .signedOut
     
     private var authStateHandle: AuthStateDidChangeListenerHandle?
+    private var currentNonce: String?
     
     override init() {
         super.init()
@@ -222,9 +224,11 @@ extension AuthManager: ASAuthorizationControllerDelegate {
                 return
             }
             
-            let credential = OAuthProvider.credential(withProviderID: "apple.com",
-                                                    idToken: idTokenString,
-                                                    rawNonce: nonce)
+            let credential = OAuthProvider.appleCredential(
+                withIDToken: idTokenString,
+                rawNonce: nonce,
+                fullName: appleIDCredential.fullName
+            )
             
             Auth.auth().signIn(with: credential) { [weak self] authResult, error in
                 DispatchQueue.main.async {
@@ -254,8 +258,6 @@ extension AuthManager: ASAuthorizationControllerDelegate {
     }
     
     // MARK: - Nonce for Sign in with Apple
-    
-    private var currentNonce: String?
     
     private func randomNonceString(length: Int = 32) -> String {
         precondition(length > 0)
