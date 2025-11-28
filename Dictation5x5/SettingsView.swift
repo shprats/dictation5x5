@@ -17,6 +17,7 @@ struct SettingsView: View {
     @State private var showError = false
     @State private var errorMessage = ""
     @State private var showUserProfile = false
+    @State private var showSignOutConfirmation = false
     
     // Preset URLs
     private let presets = [
@@ -112,6 +113,62 @@ struct SettingsView: View {
                     }
                     .disabled(streaming.state != .idle || serverURLString.isEmpty)
                 }
+                
+                // Legal & Support Section
+                Section(header: Text("Legal & Support")) {
+                    if let privacyURL = AppConfig.privacyPolicyURLValue {
+                        Link(destination: privacyURL) {
+                            HStack {
+                                Image(systemName: "hand.raised")
+                                Text("Privacy Policy")
+                                Spacer()
+                                Image(systemName: "arrow.up.right.square")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    }
+                    
+                    if let termsURL = AppConfig.termsOfServiceURLValue {
+                        Link(destination: termsURL) {
+                            HStack {
+                                Image(systemName: "doc.text")
+                                Text("Terms of Service")
+                                Spacer()
+                                Image(systemName: "arrow.up.right.square")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    }
+                    
+                    if let supportURL = AppConfig.supportURLValue {
+                        Link(destination: supportURL) {
+                            HStack {
+                                Image(systemName: "questionmark.circle")
+                                Text("Support")
+                                Spacer()
+                                Image(systemName: "arrow.up.right.square")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    }
+                }
+                
+                // Account Actions Section
+                Section(header: Text("Account Actions")) {
+                    Button(action: {
+                        showSignOutConfirmation = true
+                    }) {
+                        HStack {
+                            Image(systemName: "arrow.right.square")
+                            Text("Sign Out")
+                            Spacer()
+                        }
+                        .foregroundColor(.blue)
+                    }
+                }
             }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
@@ -126,6 +183,15 @@ struct SettingsView: View {
                 Button("OK", role: .cancel) { }
             } message: {
                 Text(errorMessage)
+            }
+            .alert("Sign Out", isPresented: $showSignOutConfirmation) {
+                Button("Cancel", role: .cancel) { }
+                Button("Sign Out", role: .destructive) {
+                    authManager.signOut()
+                    dismiss()
+                }
+            } message: {
+                Text("Are you sure you want to sign out?")
             }
             .sheet(isPresented: $showUserProfile) {
                 UserProfileView(authManager: authManager)

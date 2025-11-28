@@ -72,37 +72,73 @@ struct UserProfileView: View {
                 
                 // Legal & Support Section
                 Section(header: Text("Legal & Support")) {
-                    Link(destination: URL(string: "https://yourwebsite.com/privacy-policy")!) {
+                    if let privacyURL = AppConfig.privacyPolicyURLValue {
+                        Link(destination: privacyURL) {
+                            HStack {
+                                Image(systemName: "hand.raised")
+                                Text("Privacy Policy")
+                                Spacer()
+                                Image(systemName: "arrow.up.right.square")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    } else {
                         HStack {
                             Image(systemName: "hand.raised")
                             Text("Privacy Policy")
                             Spacer()
-                            Image(systemName: "arrow.up.right.square")
+                            Text("Not configured")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
+                        .foregroundColor(.secondary)
                     }
                     
-                    Link(destination: URL(string: "https://yourwebsite.com/terms")!) {
+                    if let termsURL = AppConfig.termsOfServiceURLValue {
+                        Link(destination: termsURL) {
+                            HStack {
+                                Image(systemName: "doc.text")
+                                Text("Terms of Service")
+                                Spacer()
+                                Image(systemName: "arrow.up.right.square")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    } else {
                         HStack {
                             Image(systemName: "doc.text")
                             Text("Terms of Service")
                             Spacer()
-                            Image(systemName: "arrow.up.right.square")
+                            Text("Not configured")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
+                        .foregroundColor(.secondary)
                     }
                     
-                    Link(destination: URL(string: "https://yourwebsite.com/support")!) {
+                    if let supportURL = AppConfig.supportURLValue {
+                        Link(destination: supportURL) {
+                            HStack {
+                                Image(systemName: "questionmark.circle")
+                                Text("Support")
+                                Spacer()
+                                Image(systemName: "arrow.up.right.square")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    } else {
                         HStack {
                             Image(systemName: "questionmark.circle")
                             Text("Support")
                             Spacer()
-                            Image(systemName: "arrow.up.right.square")
+                            Text("Not configured")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
+                        .foregroundColor(.secondary)
                     }
                 }
                 
