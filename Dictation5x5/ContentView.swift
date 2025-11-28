@@ -10,7 +10,7 @@ struct ContentView: View {
     
     init() {
         // Initialize with placeholder URL - will be updated when serverConfig loads
-        let placeholderURL = URL(string: "ws://localhost:8080")!
+        let placeholderURL = URL(string: "ws://localhost:8080") ?? URL(string: "ws://127.0.0.1:8080")!
         let store = RecordingStore()
         _store = StateObject(wrappedValue: store)
         _streaming = StateObject(wrappedValue: SpeechStreamingManager(
@@ -26,6 +26,10 @@ struct ContentView: View {
             } else {
                 LoginView(authManager: authManager)
             }
+        }
+        .onAppear {
+            // Initialize auth listener after view appears (Firebase should be ready by then)
+            authManager.initializeAuthListener()
         }
     }
     
