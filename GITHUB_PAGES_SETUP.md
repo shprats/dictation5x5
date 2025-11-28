@@ -29,7 +29,28 @@ git push origin main
 
 ---
 
-## Step 3: Enable GitHub Pages
+## Step 3: Make Repository Public (REQUIRED)
+
+**IMPORTANT:** GitHub Pages on the free tier only works with **public repositories**. If your repository is private, you must make it public first.
+
+1. **Go to Repository Settings:**
+   - Navigate to: `https://github.com/YOUR_USERNAME/dictation5x5/settings`
+
+2. **Scroll to "Danger Zone":**
+   - Scroll all the way to the bottom of the settings page
+   - Find the "Danger Zone" section
+
+3. **Change Visibility:**
+   - Click "Change visibility"
+   - Select "Make public"
+   - Type your repository name to confirm: `YOUR_USERNAME/dictation5x5`
+   - Click "I understand, change repository visibility"
+
+4. **Note:** Making the repository public is safe for this project since legal pages are meant to be publicly accessible anyway.
+
+---
+
+## Step 4: Enable GitHub Pages
 
 1. **Go to your repository on GitHub:**
    - Navigate to: `https://github.com/YOUR_USERNAME/dictation5x5`
@@ -39,6 +60,7 @@ git push origin main
 
 3. **Enable GitHub Pages:**
    - Scroll down to "Pages" in the left sidebar
+   - **You should now see the "Source" dropdown** (if you don't, the repository might still be private)
    - Under "Source", select "Deploy from a branch"
    - Branch: `main` (or `master`)
    - Folder: `/docs`
