@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support - Dictation5x5</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        h1 {
+            color: #007AFF;
+            border-bottom: 2px solid #007AFF;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #007AFF;
+            margin-top: 30px;
+        }
+        .faq-item {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+        .faq-question {
+            font-weight: bold;
+            color: #007AFF;
+            margin-bottom: 10px;
+        }
+        .contact-box {
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 30px;
+        }
+        a {
+            color: #007AFF;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .troubleshooting {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Support & Help</h1>
+    <p>Welcome to the Dictation5x5 support page. Find answers to common questions and get help with the app.</p>
+
+    <h2>Frequently Asked Questions (FAQ)</h2>
+
+    <div class="faq-item">
+        <div class="faq-question">Q: How do I sign in to the app?</div>
+        <div>A: You can sign in using Sign in with Apple, Google Sign-In, or create an account with your email and password. Tap the sign-in option you prefer on the login screen.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">Q: How do I start recording?</div>
+        <div>A: After signing in, tap the "Start" button on the main screen. The app will begin recording audio from your device's microphone and display transcriptions in real-time.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">Q: Where are my recordings stored?</div>
+        <div>A: All audio recordings and transcripts are stored locally on your device. They are not uploaded to our servers. You can view your recording history by tapping the history icon (clock) in the bottom right corner.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">Q: How do I delete my account?</div>
+        <div>A: Go to Settings → Account (tap the person icon) → Actions → Delete Account. You'll be asked to confirm before your account is permanently deleted.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">Q: Can I use this app offline?</div>
+        <div>A: The app requires an internet connection to transcribe audio using Google Cloud Speech-to-Text API. However, you can view and play back previously recorded sessions offline.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">Q: Is my data secure?</div>
+        <div>A: Yes. Audio recordings are processed in real-time and stored only on your device. Account information is securely stored using Firebase Authentication. See our <a href="privacy-policy.html">Privacy Policy</a> for more details.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">Q: How accurate is the transcription?</div>
+        <div>A: Transcription accuracy depends on several factors including audio quality, background noise, speaking clarity, and accent. The app uses Google Cloud Speech-to-Text API with medical model optimization for better accuracy with medical terminology.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">Q: Can I edit transcripts?</div>
+        <div>A: Currently, transcripts are read-only. You can copy the text and edit it in another app. We're working on adding in-app editing features in future updates.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">Q: How do I change the server URL?</div>
+        <div>A: Go to Settings → Server Configuration. You can enter a custom WebSocket server URL or use one of the preset options. Note: This is typically only needed for advanced users or developers.</div>
+    </div>
+
+    <h2>Troubleshooting</h2>
+
+    <div class="troubleshooting">
+        <h3>App won't connect to server</h3>
+        <ul>
+            <li>Check your internet connection</li>
+            <li>Verify the server URL in Settings is correct</li>
+            <li>Try restarting the app</li>
+            <li>If using Cloud Run, ensure the service is running</li>
+        </ul>
+    </div>
+
+    <div class="troubleshooting">
+        <h3>Microphone not working</h3>
+        <ul>
+            <li>Check that microphone permissions are enabled in iOS Settings → Dictation5x5</li>
+            <li>Ensure no other app is using the microphone</li>
+            <li>Try restarting the app</li>
+            <li>Check that your device's microphone is not blocked or damaged</li>
+        </ul>
+    </div>
+
+    <div class="troubleshooting">
+        <h3>Transcription not appearing</h3>
+        <ul>
+            <li>Ensure you're connected to the internet</li>
+            <li>Check that the server is running and accessible</li>
+            <li>Try stopping and starting the recording again</li>
+            <li>Check the connection status in Settings</li>
+        </ul>
+    </div>
+
+    <div class="troubleshooting">
+        <h3>Sign in not working</h3>
+        <ul>
+            <li>Check your internet connection</li>
+            <li>Verify your email and password are correct</li>
+            <li>If using Sign in with Apple, ensure it's enabled on your device</li>
+            <li>If using Google Sign-In, ensure you're signed in to Google on your device</li>
+            <li>Try signing out and signing back in</li>
+        </ul>
+    </div>
+
+    <div class="troubleshooting">
+        <h3>Audio playback not working</h3>
+        <ul>
+            <li>Check your device volume</li>
+            <li>Ensure audio files weren't deleted</li>
+            <li>Try restarting the app</li>
+            <li>Check that your device's speakers are working</li>
+        </ul>
+    </div>
+
+    <h2>Getting Help</h2>
+    <p>If you're experiencing issues not covered here, please contact us:</p>
+
+    <div class="contact-box">
+        <h3>Contact Support</h3>
+        <p><strong>Email:</strong> <a href="mailto:support@dictation5x5.com">support@dictation5x5.com</a></p>
+        <p><strong>Response Time:</strong> We typically respond within 24-48 hours during business days.</p>
+        <p><strong>When contacting us, please include:</strong></p>
+        <ul>
+            <li>Your device model and iOS version</li>
+            <li>App version (found in Settings → Account → About)</li>
+            <li>Description of the issue</li>
+            <li>Steps to reproduce the problem (if applicable)</li>
+            <li>Screenshots (if helpful)</li>
+        </ul>
+    </div>
+
+    <h2>Reporting Issues</h2>
+    <p>If you encounter a bug or have a feature request, please email us at <a href="mailto:support@dictation5x5.com">support@dictation5x5.com</a> with the subject line "Bug Report" or "Feature Request".</p>
+
+    <h2>Privacy & Legal</h2>
+    <p>
+        <a href="privacy-policy.html">Privacy Policy</a> | 
+        <a href="terms.html">Terms of Service</a>
+    </p>
+
+    <hr style="margin: 40px 0; border: none; border-top: 1px solid #ddd;">
+    <p style="text-align: center; color: #666;">
+        <a href="index.html">← Back to Home</a> | 
+        <a href="privacy-policy.html">Privacy Policy</a> | 
+        <a href="terms.html">Terms of Service</a>
+    </p>
+</body>
+</html>
+
