@@ -22,11 +22,16 @@ final class TranscriptModel: ObservableObject {
     }
 
     /// Always REPLACE interim, never append, to avoid repetition.
+    /// Must be called on main thread to ensure UI updates.
     func mergeInterimCandidate(_ newHypRaw: String) {
+        assert(Thread.isMainThread, "mergeInterimCandidate must be called on main thread")
         let newHyp = newHypRaw.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !newHyp.isEmpty else { return }
-        interimFull = newHyp
-        bumpTick()
+        // Only update if text actually changed to avoid unnecessary UI refreshes
+        if interimFull != newHyp {
+            interimFull = newHyp
+            bumpTick()
+        }
     }
 
     /// When a final arrives, REPLACE the committed transcript and clear interim.

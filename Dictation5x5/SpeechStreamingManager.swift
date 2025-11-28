@@ -191,15 +191,31 @@ final class SpeechStreamingManager: NSObject, ObservableObject {
             debugPrint("[SSM] Received INTERIM (len=\(hyp.count)):", hyp.prefix(100))
             if self.metrics.firstInterimAt == nil { self.metrics.markFirstInterim() }
 
-            // Allow small fluctuations; ignore large shrink
-            let allow = hyp.count + 4 >= lastInterim.count || lastInterim.isEmpty
+            // Improved regression guard: allow updates if:
+            // 1. New text is longer (growing transcript)
+            // 2. New text is within 20% of previous length (allows corrections)
+            // 3. Previous is empty (first interim)
+            // 4. New text is significantly different (allows complete rewrites)
+            let allow: Bool
+            if lastInterim.isEmpty {
+                allow = true
+            } else if hyp.count >= lastInterim.count {
+                // Growing transcript - always allow
+                allow = true
+            } else {
+                // Shrinking - allow if within reasonable bounds (20% tolerance)
+                let shrinkRatio = Double(hyp.count) / Double(lastInterim.count)
+                allow = shrinkRatio >= 0.8 || hyp.count > 50 // Allow if >80% of previous or still substantial
+            }
+            
             if allow {
                 self.lastInterim = hyp
+                // handleServerMessage is already called on main thread, so we can update directly
                 self.transcript.mergeInterimCandidate(hyp)
-                debugPrint("[SSM] Updated interim transcript")
+                debugPrint("[SSM] Updated interim transcript (len=\(hyp.count))")
             } else {
                 // ignore regressive interim
-                debugPrint("[SSM] Ignoring regressive interim (len:", hyp.count, "< last:", lastInterim.count, ")")
+                debugPrint("[SSM] Ignoring regressive interim (len:", hyp.count, "< last:", lastInterim.count, ", ratio:", String(format: "%.2f", Double(hyp.count) / Double(lastInterim.count)), ")")
             }
 
         } else if line.hasPrefix("FINAL:") {
